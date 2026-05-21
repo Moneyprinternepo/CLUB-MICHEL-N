@@ -156,20 +156,20 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font
 .ord-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0;}
 .ord-badge{margin-left:auto;flex-shrink:0;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border:1px solid var(--border);padding:2px 8px;}
 
-/* dish carousel */
-.dish-car-wrap{margin-bottom:60px;}
-.dish-car-outer{position:relative;}
-.dish-car-track{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px;}
-.dish-car-track::-webkit-scrollbar{display:none;}
-.dish-slide{flex:0 0 calc(33.33% - 4px);scroll-snap-align:start;aspect-ratio:1;background:var(--s2);overflow:hidden;cursor:pointer;position:relative;}
-.dish-slide img{width:100%;height:100%;object-fit:cover;object-position:center 20%;transition:transform .4s ease;opacity:0;}
-.dish-slide img.ld{opacity:1;}
-.dish-slide:hover img{transform:scale(1.06);}
-.dish-slide::after{content:'+';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(12,10,7,.45);color:var(--ink);font-size:28px;opacity:0;transition:opacity .3s;}
-.dish-slide:hover::after{opacity:1;}
-.dc-arr{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;background:rgba(12,10,7,.8);border:1px solid var(--border);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all .2s;z-index:5;border-radius:2px;}
-.dc-arr:hover{background:var(--gold);color:var(--bg);}
-.dc-prev{left:-48px;}.dc-next{right:-48px;}
+/* dish grid */
+.dish-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px;margin-bottom:60px;}
+.dish-tile{aspect-ratio:1;background:var(--s2);overflow:hidden;cursor:pointer;position:relative;}
+.dish-tile img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease;}
+.dish-tile:hover img{transform:scale(1.06);}
+.dish-tile::after{content:'⤢';position:absolute;bottom:8px;right:10px;font-size:16px;color:rgba(237,228,206,.7);opacity:0;transition:opacity .2s;}
+.dish-tile:hover::after{opacity:1;}
+/* guest profile photos */
+.guest-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px;margin-bottom:60px;}
+.guest-tile{position:relative;overflow:hidden;cursor:pointer;}
+.guest-tile img{width:100%;aspect-ratio:4/5;object-fit:cover;object-position:center top;display:block;transition:transform .5s ease;}
+.guest-tile:hover img{transform:scale(1.03);}
+.guest-tile-name{position:absolute;bottom:0;left:0;right:0;padding:28px 18px 16px;background:linear-gradient(to top,rgba(12,10,7,.85),transparent);font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:var(--ink);}
+.guest-tile-role{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-family:'DM Sans',sans-serif;font-style:normal;}
 
 /* bill / slot machine */
 .vd-bill{background:var(--s1);border:1px solid var(--border);padding:44px 52px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:28px;position:relative;overflow:hidden;}
@@ -486,9 +486,11 @@ function evGo(idx){
 function evStart(){evStop();if(EVENTS.length>1)evTimer=setInterval(()=>evGo(evIdx+1),12000);}
 
 // ══════════════════════════════════════════════════════
-//  DISH CAROUSEL (velada page)
+//  LIGHTBOX
 // ══════════════════════════════════════════════════════
 let lbPhotos=[],lbIdx=0;
+let _dlbPhotos=[];
+function dlbOpen(i){openLb(_dlbPhotos,i);}
 function openLb(photos,idx){
   lbPhotos=photos;lbIdx=idx;
   document.getElementById('lb-img').src=photos[idx];
@@ -696,64 +698,105 @@ function renderVeladas(app){
 //  VELADA DETAIL
 // ══════════════════════════════════════════════════════
 function renderVelada(app,id){
-  const ev=EVENTS.find(e=>e.id===id);
-  if(!ev){app.innerHTML=`<div class="page"><p style="color:var(--dim);text-align:center;padding:80px;font-style:italic">Velada no encontrada.</p></div>`;return;}
-  const n=ev.participants.length;
-  const gp=ev.group_photo
-    ?`<img data-lazy="${ev.group_photo}" alt="Foto grupal" onerror="this.parentElement.innerHTML='<span>Sin foto de grupo</span>'">`
-    :`<span>Sin foto de grupo</span>`;
-  const paxHtml=ev.participants.map((p,i)=>{
-    const m=getMember(p.member);
-    return `<div class="pax-item" data-a="lf" style="transition-delay:${i*0.1}s">
-      <div class="pax-hd">${av(m,'md')}<div><div class="pax-name">${m.name}</div><div class="pax-role">${m.role}</div></div></div>
-      <div class="pax-q">${p.quote||''}</div>
-    </div>`;
-  }).join('');
-  const foodHtml=ev.food.map(d=>`<li class="ord-item"><span class="ord-dot"></span>${d}<span class="ord-badge">Plato</span></li>`).join('');
-  const drinksHtml=ev.drinks.map(d=>`<li class="ord-item"><span class="ord-dot"></span>${d.name}${d.qty>1?` &times;${d.qty}`:''}<span class="ord-badge">Bebida</span></li>`).join('');
-  const photos=ev.dish_photos||[];
-  const dishSlides=photos.map((ph,i)=>`
-    <div class="dish-slide" onclick="openLb(${JSON.stringify(photos)},${i})">
-      <img data-lazy="${ph}" alt="Plato ${i+1}" onerror="this.parentElement.style.background='var(--s3)'">
-    </div>`).join('');
-  const dishCar=photos.length?`
-    <div class="dish-car-wrap" data-a="sc">
-      <div class="sec-t">Los platos</div>
-      <div class="dish-car-outer">
-        <div class="dish-car-track" id="dish-track">${dishSlides}</div>
-      </div>
-    </div>`:'';
-  const foodPP=(ev.food.length/n).toFixed(1);
-  const drnPP=(ev.drinks.reduce((s,d)=>s+d.qty,0)/n).toFixed(1);
-  app.innerHTML=`
-    <div class="page">
-      <div class="vd-bc"><button onclick="go('/veladas')">Veladas</button><span>/</span><span>${ev.restaurant}</span></div>
-      <div class="vd-hd" data-a>
-        <div class="vd-num">Velada ${ev.id}</div>
-        <h1 class="vd-title">${ev.restaurant}</h1>
-        <div class="vd-meta">${fmt.date(ev.date)}${ev.location?' &middot; '+ev.location:''}</div>
-      </div>
-      <div class="vd-gphoto" data-a="sc">${gp}</div>
-      <div class="vd-cols">
-        <div>${paxHtml}</div>
-        <div>
-          <div class="sec-t" data-a>Lo pedido</div>
-          <ul class="ord-list" data-a style="transition-delay:.1s">${foodHtml}${drinksHtml}</ul>
+  try{
+    const ev=EVENTS.find(e=>e.id===id);
+    if(!ev){app.innerHTML=`<div class="page"><p style="color:var(--dim);text-align:center;padding:80px;font-style:italic">Velada no encontrada.</p></div>`;return;}
+    const n=ev.participants.length||1;
+
+    // group photo — use src directly, no data-lazy
+    const gp=ev.group_photo
+      ?`<img src="${ev.group_photo}" alt="Foto grupal">`
+      :`<span style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-transform:uppercase">Sin foto de grupo</span>`;
+
+    // participants + quotes
+    const paxHtml=(ev.participants||[]).map((p,i)=>{
+      const m=getMember(p.member||'');
+      const quote=p.quote||'';
+      return `<div class="pax-item" data-a="lf" style="transition-delay:${i*0.1}s">
+        <div class="pax-hd">${av(m,'md')}<div><div class="pax-name">${m.name}</div><div class="pax-role">${m.role||''}</div></div></div>
+        ${quote?`<div class="pax-q">"${quote}"</div>`:''}
+      </div>`;
+    }).join('');
+
+    // food & drinks
+    const foodHtml=(ev.food||[]).map(d=>`<li class="ord-item"><span class="ord-dot"></span>${d}<span class="ord-badge">Plato</span></li>`).join('');
+    const drinksHtml=(ev.drinks||[]).map(d=>`<li class="ord-item"><span class="ord-dot"></span>${d.name||''}${(d.qty||0)>1?` &times;${d.qty}`:''}<span class="ord-badge">Bebida</span></li>`).join('');
+
+    // dish photos grid
+    const photos=ev.dish_photos||[];
+    _dlbPhotos=[...photos];
+    const dishGrid=photos.length?`
+      <div data-a>
+        <div class="sec-t">Los platos</div>
+        <div class="dish-grid">
+          ${photos.map((ph,i)=>`<div class="dish-tile" onclick="dlbOpen(${i})"><img src="${ph}" alt="Plato ${i+1}"></div>`).join('')}
         </div>
-      </div>
-      ${dishCar}
-      <div class="vd-bill" data-a>
-        <div class="bill-left">
-          <div class="bill-intro">El palazo fue de</div>
-          <div class="bill-slot" data-target="${ev.total_bill}">0&nbsp;&euro;</div>
-          <div class="bill-per">Entre ${n} personas &middot; ${fmt.eur(ev.total_bill/n)} por cabeza</div>
+      </div>`:'';
+
+    // guest profile photos (everyone except host)
+    const guests=(ev.participants||[])
+      .map(p=>({p,m:getMember(p.member||'')}))
+      .filter(({m})=>m.photo && (m.role||'').indexOf('Anfitri')===-1);
+    const guestGrid=guests.length?`
+      <div data-a>
+        <div class="sec-t">Los invitados</div>
+        <div class="guest-grid">
+          ${guests.map(({m},gi)=>`
+            <div class="guest-tile" onclick="_dlbGuests=${gi};openLb([${guests.map(g=>`'${g.m.photo}'`).join(',')}],${gi})">
+              <img src="${m.photo}" alt="${m.name}">
+              <div class="guest-tile-name">
+                <div class="guest-tile-role">${m.role||''}</div>
+                ${m.name}
+              </div>
+            </div>`).join('')}
         </div>
-        <div class="bill-stats">
-          <div><div class="bs-val">${foodPP}</div><div class="bs-lbl">Platos / persona</div></div>
-          <div><div class="bs-val">${drnPP}</div><div class="bs-lbl">Bebidas / persona</div></div>
+      </div>`:'';
+
+    const foodPP=((ev.food||[]).length/n).toFixed(1);
+    const drnPP=((ev.drinks||[]).reduce((s,d)=>s+(d.qty||0),0)/n).toFixed(1);
+
+    app.innerHTML=`
+      <div class="page">
+        <div class="vd-bc"><button onclick="go('/veladas')">Veladas</button><span>/</span><span>${ev.restaurant}</span></div>
+        <div class="vd-hd" data-a>
+          <div class="vd-num">Velada ${ev.id}</div>
+          <h1 class="vd-title">${ev.restaurant}</h1>
+          <div class="vd-meta">${fmt.date(ev.date)}${ev.location?' &middot; '+ev.location:''}</div>
         </div>
-      </div>
-    </div>`;
+        <div class="vd-gphoto" data-a="sc">${gp}</div>
+        <div class="vd-cols">
+          <div>${paxHtml}</div>
+          <div>
+            <div class="sec-t" data-a>Lo pedido</div>
+            <ul class="ord-list" data-a style="transition-delay:.1s">${foodHtml}${drinksHtml}</ul>
+          </div>
+        </div>
+        ${dishGrid}
+        ${guestGrid}
+        <div class="vd-bill" data-a>
+          <div class="bill-left">
+            <div class="bill-intro">El palazo fue de</div>
+            <div class="bill-slot" data-target="${ev.total_bill||0}">0&nbsp;&euro;</div>
+            <div class="bill-per">Entre ${n} personas &middot; ${fmt.eur((ev.total_bill||0)/n)} por cabeza</div>
+          </div>
+          <div class="bill-stats">
+            <div><div class="bs-val">${foodPP}</div><div class="bs-lbl">Platos / persona</div></div>
+            <div><div class="bs-val">${drnPP}</div><div class="bs-lbl">Bebidas / persona</div></div>
+          </div>
+        </div>
+      </div>`;
+
+    // fix group photo fade-in
+    const gphotoImg=app.querySelector('.vd-gphoto img');
+    if(gphotoImg){
+      if(gphotoImg.complete&&gphotoImg.naturalWidth) gphotoImg.classList.add('ld');
+      else gphotoImg.addEventListener('load',()=>gphotoImg.classList.add('ld'));
+      gphotoImg.addEventListener('error',()=>{gphotoImg.parentElement.innerHTML='<span style="color:var(--dim);font-size:11px;letter-spacing:.15em;text-transform:uppercase">Sin foto de grupo</span>';});
+    }
+  }catch(err){
+    console.error('renderVelada error:',err);
+    app.innerHTML=`<div class="page"><p style="color:var(--dim);text-align:center;padding:80px;font-style:italic">Error cargando la velada: ${err.message}</p></div>`;
+  }
 }
 
 // ══════════════════════════════════════════════════════
