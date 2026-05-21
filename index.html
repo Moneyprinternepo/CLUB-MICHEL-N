@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club Michelin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0C0A07; --s1:#181410; --s2:#221D16; --s3:#2C261C;
+  --ink:#F0E8D4; --dim:#A89880; --gold:#D09530; --shine:#ECC054;
+  --red:#C04444; --border:#36301F; --nav-h:60px; --bot-h:62px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden;}
+
+/* ── NAV ── */
+#nav{position:fixed;top:0;left:0;right:0;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 44px;background:rgba(12,10,7,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);z-index:300;}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);text-decoration:none;}
+.nav-links{display:flex;gap:10px;list-style:none;}
+.nav-links a{font-size:12px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);text-decoration:none;padding:8px 14px;transition:color .2s;}
+.nav-links a:hover,.nav-links a.active{color:var(--ink);}
+
+/* ── MOBILE NAV (bottom bar) ── */
+#mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--bot-h);background:rgba(12,10,7,.96);backdrop-filter:blur(20px);border-top:1px solid var(--border);z-index:300;justify-content:space-around;align-items:center;}
+.mob-link{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;color:var(--dim);padding:6px 14px;transition:color .2s;min-width:60px;}
+.mob-link .ml-icon{font-size:20px;line-height:1;}
+.mob-link .ml-lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;}
+.mob-link.active,.mob-link:hover{color:var(--gold);}
+
+#app{padding-top:var(--nav-h);min-height:100vh;transition:opacity .22s ease;}
+
+/* ── SCROLL ANIM ── */
+[data-a]{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease;}
+[data-a="sc"]{opacity:0;transform:scale(.95);transition:opacity .7s ease,transform .7s ease;}
+[data-a="lf"]{opacity:0;transform:translateX(-22px);transition:opacity .65s ease,transform .65s ease;}
+[data-a].in{opacity:1;transform:none;}
+
+/* ── HERO ── */
+.hero{position:relative;width:100%;height:55vh;min-height:340px;max-height:480px;overflow:hidden;}
+.hero-bg-a,.hero-bg-b{position:absolute;inset:0;overflow:hidden;transition:opacity .9s ease;}
+.hero-bg-b{opacity:0;}
+.bg-blur{position:absolute;inset:-40px;background-size:cover;background-position:center;filter:blur(28px);transform:scale(1.1);opacity:.75;}
+.hero-bg-a img,.hero-bg-b img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;}
+.hero-plain{position:absolute;inset:0;background:linear-gradient(140deg,#201a10,#0c0905);}
+.hero-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(12,10,7,.95) 0%,rgba(12,10,7,.55) 45%,rgba(12,10,7,.1) 100%);}
+/* entrance */
+@keyframes heroIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.hero-content{position:absolute;bottom:0;left:0;right:0;padding:44px 56px;color:var(--ink);}
+.hero-eyebrow{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:rgba(240,232,212,.65);margin-bottom:10px;animation:heroIn .8s .2s ease both;}
+.hero-rest{font-family:'Cormorant Garamond',serif;font-size:clamp(42px,7vw,88px);font-weight:300;font-style:italic;line-height:.9;color:var(--ink);animation:heroIn .8s .35s ease both;margin-bottom:10px;}
+.hero-date{font-size:11px;color:rgba(240,232,212,.6);letter-spacing:.08em;margin-bottom:20px;animation:heroIn .8s .5s ease both;}
+/* quote slot */
+.hero-quote-slot{height:4.5rem;overflow:hidden;position:relative;margin-bottom:22px;animation:heroIn .8s .6s ease both;}
+.hq-item{position:absolute;inset:0;display:flex;align-items:flex-start;gap:12px;transition:opacity .55s ease,transform .55s ease;}
+.hq-item.s-enter{opacity:0;transform:translateY(18px);}
+.hq-item.s-vis  {opacity:1;transform:translateY(0);}
+.hq-item.s-exit {opacity:0;transform:translateY(-18px);}
+.hq-av{width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;color:var(--gold);font-size:13px;}
+.hq-av img{width:100%;height:100%;object-fit:cover;}
+.hq-body{}
+.hq-who{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
+.hq-text{font-family:'Cormorant Garamond',serif;font-size:clamp(15px,2vw,19px);font-style:italic;font-weight:300;color:rgba(240,232,212,.92);line-height:1.35;}
+/* hero footer */
+.hero-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;animation:heroIn .8s .75s ease both;}
+.hero-avs{display:flex;gap:8px;align-items:center;}
+/* arrows */
+.car-arr{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:rgba(237,228,206,.1);border:1px solid rgba(237,228,206,.15);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10;font-size:16px;transition:all .2s;backdrop-filter:blur(8px);}
+.car-arr:hover{background:var(--gold);border-color:var(--gold);color:var(--bg);}
+.car-prev{left:22px;}.car-next{right:22px;}
+.car-dots{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:7px;z-index:10;}
+.car-dot{width:5px;height:5px;border-radius:50%;background:rgba(237,228,206,.25);cursor:pointer;transition:all .3s;}
+.car-dot.on{background:var(--shine);width:18px;border-radius:3px;}
+/* img dots (inner rotation) */
+.img-dots{position:absolute;top:16px;right:20px;display:flex;gap:5px;z-index:10;}
+.img-dot{width:4px;height:4px;border-radius:50%;background:rgba(237,228,206,.2);transition:all .3s;}
+.img-dot.on{background:rgba(237,228,206,.7);}
+
+/* stats strip */
+.stats-strip{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);}
+.stat-cell{padding:26px;text-align:center;border-right:1px solid var(--border);background:var(--s1);}
+.stat-cell:last-child{border-right:none;}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;color:var(--shine);line-height:1;}
+.stat-lbl{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-top:5px;}
+
+/* big nav cards */
+.nav-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);}
+.nav-card{background:var(--s1);padding:52px 36px;cursor:pointer;position:relative;overflow:hidden;transition:background .25s;}
+.nav-card::after{content:'';position:absolute;left:0;top:0;width:2px;height:0;background:var(--gold);transition:height .35s ease;}
+.nav-card:hover{background:var(--s2);}
+.nav-card:hover::after{height:100%;}
+.nc-num{font-family:'Cormorant Garamond',serif;font-size:80px;font-weight:300;color:var(--s3);line-height:1;position:absolute;right:28px;bottom:16px;}
+.nc-title{font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:300;color:var(--ink);line-height:1;margin-bottom:10px;}
+.nc-title em{font-style:italic;color:var(--gold);}
+.nc-sub{font-size:11px;color:var(--dim);letter-spacing:.1em;}
+.nc-arrow{margin-top:24px;font-size:20px;color:var(--gold);}
+
+/* ── PAGE ── */
+.page{max-width:1060px;margin:0 auto;padding:68px 28px 96px;}
+.ph{margin-bottom:52px;}
+.ph-ey{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.ph-title{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,6vw,72px);font-weight:300;line-height:.95;color:var(--ink);}
+.ph-title em{font-style:italic;color:var(--shine);}
+
+/* ── AVATARS ── */
+.av{border-radius:50%;background:var(--s2);border:1px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;color:var(--gold);flex-shrink:0;}
+.av img{width:100%;height:100%;object-fit:cover;}
+.av-sm{width:34px;height:34px;font-size:14px;}
+.av-md{width:52px;height:52px;font-size:20px;}
+.av-lg{width:96px;height:96px;font-size:36px;}
+
+/* ── EVENT CARDS ── */
+.ev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,320px));gap:2px;background:transparent;}
+.ev-card{background:var(--s1);cursor:pointer;overflow:hidden;transition:background .2s;display:flex;flex-direction:column;border:1px solid var(--border);}
+.ev-card:hover{background:var(--s2);}
+.ev-thumb{width:100%;aspect-ratio:9/16;overflow:hidden;background:var(--s2);flex-shrink:0;position:relative;}
+.ev-thumb img{width:100%;height:100%;object-fit:cover;object-position:center top;transition:transform .5s ease;}
+.ev-card:hover .ev-thumb img{transform:scale(1.04);}
+.ev-thumb-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--s2),var(--s3));}
+.ev-thumb-letter{font-family:'Cormorant Garamond',serif;font-size:72px;font-weight:300;color:var(--dim);}
+.ev-body{padding:20px 22px;display:flex;flex-direction:column;gap:6px;}
+.ev-num{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);}
+.ev-rest{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--ink);}
+.ev-date{font-size:11px;color:var(--dim);}
+.ev-avs{display:flex;gap:6px;margin-top:8px;}
+
+/* ── VELADA ── */
+.vd-bc{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:44px;}
+.vd-bc button{background:none;border:none;cursor:pointer;color:var(--dim);font-size:10px;letter-spacing:.14em;text-transform:uppercase;transition:color .2s;padding:0;font-family:'DM Sans',sans-serif;}
+.vd-bc button:hover{color:var(--gold);}
+.vd-bc span{margin:0 10px;opacity:.4;}
+.vd-hd{margin-bottom:52px;}
+.vd-num{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;}
+.vd-title{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,7vw,88px);font-weight:300;font-style:italic;line-height:.9;color:var(--ink);margin-bottom:12px;}
+.vd-meta{font-size:12px;color:var(--dim);letter-spacing:.08em;}
+
+/* group photo */
+.vd-gphoto{width:100%;aspect-ratio:16/9;background:var(--s2);border:1px solid var(--border);overflow:hidden;margin-bottom:60px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:10px;letter-spacing:.14em;text-transform:uppercase;}
+.vd-gphoto img{width:100%;height:100%;object-fit:cover;object-position:center 12%;transition:transform .6s ease;opacity:0;}
+.vd-gphoto img.ld{opacity:1;}
+.vd-gphoto:hover img{transform:scale(1.02);}
+
+.vd-cols{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-bottom:60px;}
+.sec-t{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.pax-item{margin-bottom:28px;}
+.pax-hd{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.pax-name{font-size:14px;font-weight:500;color:var(--ink);}
+.pax-role{font-size:9px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;}
+.pax-q{font-family:'Cormorant Garamond',serif;font-size:19px;font-style:italic;font-weight:300;color:rgba(237,228,206,.8);line-height:1.4;padding-left:16px;border-left:2px solid var(--gold);}
+.ord-list{list-style:none;}
+.ord-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--ink);transition:padding-left .2s;}
+.ord-item:hover{padding-left:6px;}
+.ord-item:last-child{border-bottom:none;}
+.ord-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+.ord-badge{margin-left:auto;flex-shrink:0;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border:1px solid var(--border);padding:2px 8px;}
+
+/* dish carousel */
+.dish-car-wrap{margin-bottom:60px;}
+.dish-car-outer{position:relative;}
+.dish-car-track{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px;}
+.dish-car-track::-webkit-scrollbar{display:none;}
+.dish-slide{flex:0 0 calc(33.33% - 4px);scroll-snap-align:start;aspect-ratio:1;background:var(--s2);overflow:hidden;cursor:pointer;position:relative;}
+.dish-slide img{width:100%;height:100%;object-fit:cover;object-position:center 20%;transition:transform .4s ease;opacity:0;}
+.dish-slide img.ld{opacity:1;}
+.dish-slide:hover img{transform:scale(1.06);}
+.dish-slide::after{content:'+';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(12,10,7,.45);color:var(--ink);font-size:28px;opacity:0;transition:opacity .3s;}
+.dish-slide:hover::after{opacity:1;}
+.dc-arr{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;background:rgba(12,10,7,.8);border:1px solid var(--border);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all .2s;z-index:5;border-radius:2px;}
+.dc-arr:hover{background:var(--gold);color:var(--bg);}
+.dc-prev{left:-48px;}.dc-next{right:-48px;}
+
+/* bill / slot machine */
+.vd-bill{background:var(--s1);border:1px solid var(--border);padding:44px 52px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:28px;position:relative;overflow:hidden;}
+.vd-bill::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--gold),var(--shine));}
+.bill-left{}
+.bill-intro{font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--dim);margin-bottom:8px;}
+.bill-slot{font-family:'Cormorant Garamond',serif;font-size:clamp(52px,8vw,80px);font-weight:300;color:var(--shine);line-height:1;transition:filter .1s;}
+.bill-per{font-size:11px;color:var(--dim);letter-spacing:.1em;margin-top:4px;}
+.bill-stats{display:flex;gap:40px;}
+.bs-val{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;color:var(--ink);}
+.bs-lbl{font-size:9px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-top:3px;}
+
+/* ── LIGHTBOX ── */
+#lb{display:none;position:fixed;inset:0;background:rgba(5,4,3,.97);z-index:500;align-items:center;justify-content:center;}
+#lb.open{display:flex;}
+#lb-img{max-width:92vw;max-height:88vh;object-fit:contain;transition:opacity .3s;}
+.lb-arr{position:fixed;top:50%;transform:translateY(-50%);width:52px;height:52px;background:rgba(237,228,206,.1);border:1px solid rgba(237,228,206,.15);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;z-index:510;transition:background .2s;border-radius:50%;}
+.lb-arr:hover{background:var(--gold);}
+#lb-prev{left:20px;}#lb-next{right:20px;}
+#lb-close{position:fixed;top:20px;right:22px;width:40px;height:40px;background:none;border:1px solid rgba(237,228,206,.2);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;z-index:510;transition:border-color .2s;}
+#lb-close:hover{border-color:var(--red);}
+#lb-counter{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);font-size:11px;letter-spacing:.15em;color:rgba(237,228,206,.4);}
+
+/* ── RANKINGS ── */
+.rk-sections{display:flex;flex-direction:column;gap:72px;}
+.rk-hd{display:flex;align-items:baseline;gap:14px;margin-bottom:36px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.rk-em{font-size:28px;line-height:1;}
+.rk-ttl{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;font-style:italic;color:var(--ink);}
+/* horizontal bars */
+.hbars{display:flex;flex-direction:column;gap:18px;}
+.hbar-row{display:flex;align-items:center;gap:14px;}
+.hbar-pos{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;width:22px;text-align:center;flex-shrink:0;color:var(--dim);}
+.hbar-pos.g{color:var(--gold);}
+.hbar-info{flex:1;min-width:0;}
+.hbar-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+.hbar-name{font-size:14px;font-weight:400;color:var(--ink);}
+.hbar-val{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--shine);}
+.hbar-track{height:3px;background:var(--border);overflow:hidden;}
+.hbar-fill{height:100%;background:linear-gradient(to right,var(--gold),var(--shine));width:0;transition:width 1.3s cubic-bezier(.16,1,.3,1);}
+/* vertical bars */
+.vbar-section{overflow-x:auto;}
+.vbar-chart{display:flex;align-items:flex-end;gap:20px;height:220px;padding:0 12px 0;border-bottom:2px solid var(--border);min-width:300px;}
+.vbar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;height:100%;justify-content:flex-end;}
+.vbar-val{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--shine);margin-bottom:8px;}
+.vbar-bar{width:min(60px,100%);background:linear-gradient(to top,var(--gold),var(--shine));height:0;transition:height 1.3s cubic-bezier(.16,1,.3,1);border-radius:2px 2px 0 0;}
+.vbar-labels{display:flex;gap:20px;padding:14px 12px 0;min-width:300px;}
+.vbar-lbl-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.vbar-av{}
+.vbar-name{font-size:11px;color:var(--dim);letter-spacing:.05em;text-align:center;}
+/* spent table */
+.spent-table{border:1px solid var(--border);}
+.sp-row{display:flex;align-items:center;gap:16px;padding:18px 22px;border-bottom:1px solid var(--border);}
+.sp-row:last-child{border-bottom:none;}
+.sp-pos{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--dim);width:28px;text-align:center;flex-shrink:0;}
+.sp-pos.g{color:var(--gold);}
+.sp-name{flex:1;font-size:14px;font-weight:400;color:var(--ink);}
+.sp-val{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--shine);}
+
+/* ── MIEMBROS ── */
+.mb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1px;background:var(--border);}
+.mb-card{background:var(--s1);padding:44px 30px;text-align:center;transition:background .2s;}
+.mb-card:hover{background:var(--s2);}
+.mb-name{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;color:var(--ink);margin-bottom:4px;margin-top:18px;}
+.mb-role{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:26px;}
+.mb-stats{display:flex;justify-content:space-around;border-top:1px solid var(--border);padding-top:22px;}
+.ms-val{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--shine);}
+.ms-lbl{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);margin-top:4px;}
+
+/* misc */
+.back-btn{display:inline-flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);cursor:pointer;background:none;border:none;padding:0;margin-bottom:36px;transition:color .2s;font-family:'DM Sans',sans-serif;}
+.back-btn:hover{color:var(--gold);}
+footer{border-top:1px solid var(--border);padding:26px 44px;background:var(--s1);display:flex;align-items:center;justify-content:space-between;}
+.ft-logo{font-family:'Cormorant Garamond',serif;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);}
+.ft-txt{font-size:10px;letter-spacing:.1em;color:var(--dim);}
+.loader{min-height:calc(100vh - var(--nav-h));display:flex;align-items:center;justify-content:center;}
+@keyframes pulse{0%,100%{opacity:.2;}50%{opacity:1;}}
+.loader-g{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:300;color:var(--gold);animation:pulse 1.8s ease infinite;text-align:center;}
+.loader-t{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);margin-top:12px;text-align:center;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  #nav .nav-links{display:none;}
+  #mob-nav{display:flex;}
+  #app{padding-bottom:var(--bot-h);}
+  .hero{height:58vh;min-height:360px;}
+  .hero-content{padding:28px 22px;}
+  .hero-rest{font-size:42px;}
+  .hero-quote-slot{height:5rem;}
+  .hq-text{font-size:15px;}
+  .car-arr{display:none;}
+  .stats-strip{grid-template-columns:repeat(3,1fr);}
+  .stat-val{font-size:30px;}
+  .nav-cards{grid-template-columns:1fr;}
+  .nc-title{font-size:36px;}
+  .nc-num{font-size:60px;}
+  .ev-grid{grid-template-columns:repeat(2,1fr);}
+  .ev-card{flex-direction:column;height:auto;}
+  .vd-cols{grid-template-columns:1fr;gap:40px;}
+  .dish-slide{flex:0 0 calc(100% - 4px);}
+  .dc-arr{display:none;}
+  .vd-bill{padding:28px 24px;}
+  .bill-slot{font-size:48px;}
+  .bill-stats{gap:22px;}
+  .bs-val{font-size:26px;}
+  .page{padding:48px 18px 80px;}
+  .rk-ttl{font-size:26px;}
+  .rk-em{font-size:22px;}
+  .hbar-val{font-size:18px;}
+  .mb-grid{grid-template-columns:1fr;}
+  footer{padding:22px 22px;}
+  #nav{padding:0 22px;}
+}
+@media(max-width:900px){
+  .nav-cards{grid-template-columns:1fr 1fr;}
+  .vd-cols{gap:36px;}
+  .dish-slide{flex:0 0 calc(50% - 3px);}
+  .dc-prev{left:-14px;}.dc-next{right:-14px;}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="#/" class="nav-logo">Club Michelin</a>
+  <ul class="nav-links">
+    <li><a href="#/veladas">Veladas</a></li>
+    <li><a href="#/rankings">Rankings</a></li>
+    <li><a href="#/miembros">Miembros</a></li>
+  </ul>
+</nav>
+
+<div id="mob-nav">
+  <a href="#/" class="mob-link"><span class="ml-icon">✦</span><span class="ml-lbl">Inicio</span></a>
+  <a href="#/veladas" class="mob-link"><span class="ml-icon">🍽</span><span class="ml-lbl">Veladas</span></a>
+  <a href="#/rankings" class="mob-link"><span class="ml-icon">🏆</span><span class="ml-lbl">Rankings</span></a>
+  <a href="#/miembros" class="mob-link"><span class="ml-icon">👤</span><span class="ml-lbl">Miembros</span></a>
+</div>
+
+<div id="app"></div>
+
+<div id="lb">
+  <div id="lb-close" onclick="closeLb()">✕</div>
+  <div class="lb-arr" id="lb-prev" onclick="lbGo(-1)">&#8592;</div>
+  <img id="lb-img" src="" alt="">
+  <div class="lb-arr" id="lb-next" onclick="lbGo(1)">&#8594;</div>
+  <div id="lb-counter"></div>
+</div>
+
+<footer>
+  <span class="ft-logo">Club Michelin</span>
+  <span class="ft-txt">Una crónica gastronómica privada</span>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════
+let MEMBERS=[],EVENTS=[];
+function showLoader(){document.getElementById('app').innerHTML=`<div class="loader"><div><div class="loader-g">CM</div><div class="loader-t">Cargando</div></div></div>`;}
+function showError(m){document.getElementById('app').innerHTML=`<div class="loader"><div style="text-align:center;font-family:'Cormorant Garamond',serif;font-size:22px;font-style:italic;color:var(--dim)">${m}</div></div>`;}
+async function loadData(){
+  showLoader();
+  try{
+    const mr=await fetch('data/members.json'); if(!mr.ok)throw new Error('members.json');
+    MEMBERS=(await mr.json()).members;
+    const ir=await fetch('data/events/index.json'); if(!ir.ok)throw new Error('events/index.json');
+    const ids=await ir.json();
+    EVENTS=await Promise.all(ids.map(id=>fetch(`data/events/${id}.json`).then(r=>{if(!r.ok)throw new Error(id+'.json');return r.json();})));
+  }catch(e){console.error(e);showError(e.message);return false;}
+  return true;
+}
+
+// ══════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════
+const getMember=id=>MEMBERS.find(m=>m.id===id)||{id,name:id,role:'',photo:''};
+const fmt={
+  date(s){return new Date(s+'T00:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'});},
+  eur(n){return Math.round(n).toLocaleString('es-ES')+'\u00A0\u20AC';}
+};
+function av(m,sz){
+  const i=m.name.charAt(0).toUpperCase();
+  if(m.photo)return`<div class="av av-${sz}"><img src="${m.photo}" alt="${m.name}" onerror="this.parentElement.textContent='${i}'"></div>`;
+  return`<div class="av av-${sz}">${i}</div>`;
+}
+function getMemberStats(){
+  const s={};
+  MEMBERS.forEach(m=>{s[m.id]={id:m.id,name:m.name,photo:m.photo,events:0,spent:0,food:0,drinks:0};});
+  EVENTS.forEach(ev=>{
+    const n=ev.participants.length;
+    ev.participants.forEach(p=>{
+      if(!s[p.member])return;
+      s[p.member].events++;
+      s[p.member].spent+=ev.total_bill/n;
+      s[p.member].food+=ev.food.length/n;
+      s[p.member].drinks+=ev.drinks.reduce((a,d)=>a+d.qty,0)/n;
+    });
+  });
+  return Object.values(s);
+}
+function globalStats(){return{events:EVENTS.length,restaurants:new Set(EVENTS.map(e=>e.restaurant)).size,spent:EVENTS.reduce((s,e)=>s+e.total_bill,0)};}
+
+// ══════════════════════════════════════════════════════
+//  HERO IMAGE ROTATION
+// ══════════════════════════════════════════════════════
+let imgTimer=null,imgList=[],imgIdx=0,imgUsingB=false;
+function buildImgList(ev){
+  const l=[];
+  if(ev.group_photo)l.push(ev.group_photo);
+  (ev.dish_photos||[]).forEach(p=>l.push(p));
+  ev.participants.forEach(p=>{const m=getMember(p.member);if(m.photo)l.push(m.photo);});
+  return l.filter(Boolean);
+}
+function heroImgStop(){if(imgTimer){clearInterval(imgTimer);imgTimer=null;}}
+function setHeroBgEl(el,src){
+  if(src){
+    el.innerHTML=`<div class="bg-blur" style="background-image:url('${src}')"></div><img src="${src}" alt="">`;
+    el.style.opacity='1';
+  } else {
+    el.innerHTML='';el.style.opacity='0';
+  }
+}
+function heroImgStart(ev){
+  heroImgStop();
+  imgList=buildImgList(ev);imgIdx=0;
+  const bgA=document.getElementById('hbgA');
+  const bgB=document.getElementById('hbgB');
+  const dots=document.getElementById('img-dots');
+  if(!bgA)return;
+  setHeroBgEl(bgA,imgList[0]||null);
+  if(bgB){bgB.innerHTML='';bgB.style.opacity='0';}
+  if(dots){dots.innerHTML=imgList.map((_,i)=>`<div class="img-dot ${i===0?'on':''}"></div>`).join('');}
+  imgUsingB=false;
+  if(imgList.length<=1)return;
+  imgTimer=setInterval(()=>{
+    if(!document.getElementById('hbgA'))return heroImgStop();
+    imgIdx=(imgIdx+1)%imgList.length;
+    const src=imgList[imgIdx];
+    const bgA2=document.getElementById('hbgA');
+    const bgB2=document.getElementById('hbgB');
+    if(!bgA2||!bgB2)return heroImgStop();
+    if(!imgUsingB){
+      bgB2.innerHTML=`<div class="bg-blur" style="background-image:url('${src}')"></div><img src="${src}" alt="">`;
+      bgB2.style.opacity='1';bgA2.style.opacity='0';imgUsingB=true;
+    } else {
+      bgA2.innerHTML=`<div class="bg-blur" style="background-image:url('${src}')"></div><img src="${src}" alt="">`;
+      bgA2.style.opacity='1';bgB2.style.opacity='0';imgUsingB=false;
+    }
+    document.querySelectorAll('.img-dot').forEach((d,i)=>d.classList.toggle('on',i===imgIdx));
+  },3200);
+}
+
+// ══════════════════════════════════════════════════════
+//  HERO QUOTE CYCLING
+// ══════════════════════════════════════════════════════
+let qTimer=null,qIdx=0,qList=[];
+function quoteStop(){if(qTimer){clearInterval(qTimer);clearTimeout(qTimer);qTimer=null;}}
+function showQuote(idx){
+  const slot=document.getElementById('hq-slot');
+  if(!slot)return;
+  const old=slot.querySelector('.hq-item');
+  if(old){old.classList.remove('s-vis');old.classList.add('s-exit');}
+  setTimeout(()=>{
+    if(old&&old.parentNode)old.parentNode.removeChild(old);
+    const q=qList[idx];
+    if(!q)return;
+    const m=getMember(q.member);
+    const ai=m.photo?`<img src="${m.photo}" alt="${m.name}" onerror="this.parentElement.textContent='${m.name.charAt(0)}'">`:m.name.charAt(0);
+    const el=document.createElement('div');
+    el.className='hq-item s-enter';
+    el.innerHTML=`<div class="hq-av">${ai}</div><div class="hq-body"><div class="hq-who">${m.name}</div><div class="hq-text">"${q.quote||''}"</div></div>`;
+    slot.appendChild(el);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.replace('s-enter','s-vis')));
+  },old?320:0);
+}
+function quoteStart(ev){
+  quoteStop();
+  qList=ev.participants.filter(p=>p.quote);
+  if(!qList.length)return;
+  qIdx=0;
+  showQuote(0);
+  if(qList.length<=1)return;
+  qTimer=setInterval(()=>{
+    qIdx=(qIdx+1)%qList.length;
+    showQuote(qIdx);
+  },4000);
+}
+
+// ══════════════════════════════════════════════════════
+//  MAIN EVENT CAROUSEL
+// ══════════════════════════════════════════════════════
+let evIdx=0,evTimer=null;
+function evStop(){if(evTimer){clearInterval(evTimer);evTimer=null;}}
+function evGo(idx){
+  evIdx=((idx%EVENTS.length)+EVENTS.length)%EVENTS.length;
+  const ev=EVENTS[evIdx];
+  // update dots
+  document.querySelectorAll('.car-dot').forEach((d,i)=>d.classList.toggle('on',i===evIdx));
+  // update content
+  const restEl=document.getElementById('h-rest');
+  const dateEl=document.getElementById('h-date');
+  const eyeEl=document.getElementById('h-eye');
+  const avsEl=document.getElementById('h-avs');
+  if(restEl)restEl.textContent=ev.restaurant;
+  if(dateEl)dateEl.textContent=fmt.date(ev.date);
+  if(eyeEl)eyeEl.textContent=`Velada ${ev.id}${ev.location?' · '+ev.location:''}`;
+  if(avsEl)avsEl.innerHTML=ev.participants.map(p=>av(getMember(p.member),'sm')).join('');
+  // start image + quote rotation for this event
+  heroImgStart(ev);
+  quoteStart(ev);
+  evStop();
+  if(EVENTS.length>1)evTimer=setInterval(()=>evGo(evIdx+1),12000);
+}
+function evStart(){evStop();if(EVENTS.length>1)evTimer=setInterval(()=>evGo(evIdx+1),12000);}
+
+// ══════════════════════════════════════════════════════
+//  DISH CAROUSEL (velada page)
+// ══════════════════════════════════════════════════════
+let lbPhotos=[],lbIdx=0;
+function openLb(photos,idx){
+  lbPhotos=photos;lbIdx=idx;
+  document.getElementById('lb-img').src=photos[idx];
+  document.getElementById('lb-counter').textContent=`${idx+1} / ${photos.length}`;
+  document.getElementById('lb').classList.add('open');
+}
+function closeLb(){document.getElementById('lb').classList.remove('open');}
+function lbGo(d){
+  lbIdx=((lbIdx+d)+lbPhotos.length)%lbPhotos.length;
+  const img=document.getElementById('lb-img');
+  img.style.opacity='0';
+  setTimeout(()=>{img.src=lbPhotos[lbIdx];img.style.opacity='1';},200);
+  document.getElementById('lb-counter').textContent=`${lbIdx+1} / ${lbPhotos.length}`;
+}
+document.getElementById('lb').addEventListener('click',function(e){if(e.target===this)closeLb();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLb();if(e.key==='ArrowLeft')lbGo(-1);if(e.key==='ArrowRight')lbGo(1);});
+
+// ══════════════════════════════════════════════════════
+//  SLOT MACHINE ANIMATION
+// ══════════════════════════════════════════════════════
+function slotAnimate(el,target){
+  const dur=1800;const start=performance.now();
+  const tick=now=>{
+    const p=Math.min((now-start)/dur,1);
+    const ease=p<0.6?p/0.6*0.8:0.8+(p-0.6)/0.4*0.2;
+    const freq=14*(1-p);
+    const blur=Math.max(0,(1-p)*6*Math.abs(Math.sin(p*Math.PI*freq)));
+    const val=Math.round(ease*target);
+    el.textContent=val.toLocaleString('es-ES')+'\u00A0\u20AC';
+    el.style.filter=`blur(${blur.toFixed(1)}px)`;
+    if(p<1)requestAnimationFrame(tick);
+    else{el.textContent=Math.round(target).toLocaleString('es-ES')+'\u00A0\u20AC';el.style.filter='';}
+  };
+  requestAnimationFrame(tick);
+}
+
+// ══════════════════════════════════════════════════════
+//  SCROLL ANIMATIONS
+// ══════════════════════════════════════════════════════
+function setupAnims(){
+  const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:0.1});
+  document.querySelectorAll('[data-a]').forEach(el=>io.observe(el));
+
+  // vbars
+  const vio=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.querySelectorAll('.vbar-bar[data-h]').forEach(b=>setTimeout(()=>{b.style.height=b.dataset.h+'%';},100));
+        vio.unobserve(e.target);
+      }
+    });
+  },{threshold:0.2});
+  document.querySelectorAll('.vbar-chart').forEach(c=>vio.observe(c));
+
+  // hbars
+  const hio=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.querySelectorAll('.hbar-fill[data-w]').forEach(b=>setTimeout(()=>{b.style.width=b.dataset.w+'%';},100));
+        hio.unobserve(e.target);
+      }
+    });
+  },{threshold:0.2});
+  document.querySelectorAll('.rk-section').forEach(s=>hio.observe(s));
+
+  // slot machine on bill
+  const sio=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        const sl=e.target.querySelector('.bill-slot[data-target]');
+        if(sl)slotAnimate(sl,parseFloat(sl.dataset.target));
+        sio.unobserve(e.target);
+      }
+    });
+  },{threshold:0.4});
+  document.querySelectorAll('.vd-bill').forEach(b=>sio.observe(b));
+
+  // lazy img fade
+  document.querySelectorAll('img[data-lazy]').forEach(img=>{
+    const src=img.dataset.lazy;
+    img.src=src;
+    if(img.complete&&img.naturalWidth)img.classList.add('ld');
+    else img.addEventListener('load',()=>img.classList.add('ld'));
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  ROUTER
+// ══════════════════════════════════════════════════════
+function go(path){window.location.hash=path;}
+function setActiveNav(){
+  const h=window.location.hash.replace('#','');
+  document.querySelectorAll('.nav-links a,.mob-link').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+h||(h==='/'&&a.getAttribute('href')==='#/')));
+}
+window.addEventListener('hashchange',render);
+window.addEventListener('load',async()=>{const ok=await loadData();if(ok)render();});
+function render(){
+  evStop();heroImgStop();quoteStop();
+  const app=document.getElementById('app');
+  app.style.opacity='0';
+  setActiveNav();
+  setTimeout(()=>{
+    const h=window.location.hash.replace('#','')||'/';
+    if(h==='/'||h==='')               renderHome(app);
+    else if(h==='/veladas')           renderVeladas(app);
+    else if(h.startsWith('/velada/')) renderVelada(app,h.split('/')[2]);
+    else if(h==='/rankings')          renderRankings(app);
+    else if(h==='/miembros')          renderMiembros(app);
+    app.style.opacity='1';
+    window.scrollTo(0,0);
+    setTimeout(setupAnims,100);
+  },180);
+}
+
+// ══════════════════════════════════════════════════════
+//  HOME
+// ══════════════════════════════════════════════════════
+function renderHome(app){
+  const g=globalStats();
+  const dots=EVENTS.length>1?`<div class="car-dots">${EVENTS.map((_,i)=>`<div class="car-dot ${i===0?'on':''}" onclick="event.stopPropagation();evGo(${i})"></div>`).join('')}</div>`:'';
+  const arrows=EVENTS.length>1?`<div class="car-arr car-prev" onclick="evGo(evIdx-1)">&#8592;</div><div class="car-arr car-next" onclick="evGo(evIdx+1)">&#8594;</div>`:'';
+  const ev0=EVENTS[0]||{id:'—',restaurant:'—',location:'—',date:'',participants:[]};
+  app.innerHTML=`
+    <!-- HERO -->
+    <div class="hero" onmouseenter="evStop()" onmouseleave="evStart()">
+      <div id="hbgA" class="hero-bg-a"></div>
+      <div id="hbgB" class="hero-bg-b"></div>
+      <div id="img-dots" class="img-dots"></div>
+      <div class="hero-grad"></div>
+      <div class="hero-content">
+        <div class="hero-eyebrow" id="h-eye">Velada ${ev0.id}${ev0.location?' &middot; '+ev0.location:''}</div>
+        <div class="hero-rest" id="h-rest">${ev0.restaurant}</div>
+        <div class="hero-date" id="h-date">${fmt.date(ev0.date)}</div>
+        <div class="hero-quote-slot" id="hq-slot"></div>
+        <div class="hero-footer">
+          <div class="hero-avs" id="h-avs">${ev0.participants.map(p=>av(getMember(p.member),'sm')).join('')}</div>
+        </div>
+      </div>
+      ${arrows}${dots}
+    </div>
+
+    <!-- STATS STRIP -->
+    <div class="stats-strip">
+      <div class="stat-cell" data-a><div class="stat-val">${g.events}</div><div class="stat-lbl">Veladas</div></div>
+      <div class="stat-cell" data-a style="transition-delay:.1s"><div class="stat-val">${g.restaurants}</div><div class="stat-lbl">Restaurantes</div></div>
+      <div class="stat-cell" data-a style="transition-delay:.2s"><div class="stat-val">${g.spent.toLocaleString('es-ES')}</div><div class="stat-lbl">&euro; Gastados</div></div>
+    </div>
+
+    <!-- BIG NAV CARDS -->
+    <div class="nav-cards">
+      <div class="nav-card" data-a onclick="go('/veladas')">
+        <div class="nc-title">Las <em>Veladas</em></div>
+        <div class="nc-sub">${g.events} noches registradas</div>
+        <div class="nc-arrow">&#8594;</div>
+        <div class="nc-num">01</div>
+      </div>
+      <div class="nav-card" data-a style="transition-delay:.1s" onclick="go('/rankings')">
+        <div class="nc-title">Los <em>Rankings</em></div>
+        <div class="nc-sub">Quién come, quién bebe, quién paga</div>
+        <div class="nc-arrow">&#8594;</div>
+        <div class="nc-num">02</div>
+      </div>
+      <div class="nav-card" data-a style="transition-delay:.2s" onclick="go('/miembros')">
+        <div class="nc-title">Los <em>Miembros</em></div>
+        <div class="nc-sub">${MEMBERS.length} comensales del club</div>
+        <div class="nc-arrow">&#8594;</div>
+        <div class="nc-num">03</div>
+      </div>
+    </div>`;
+
+  evIdx=0;
+  heroImgStart(ev0);
+  quoteStart(ev0);
+  if(EVENTS.length>1)evTimer=setInterval(()=>evGo(evIdx+1),12000);
+
+  // swipe
+  const hero=app.querySelector('.hero');
+  let tx=0;
+  hero.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+  hero.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50){if(dx<0)evGo(evIdx+1);else evGo(evIdx-1);}},{passive:true});
+}
+
+// ══════════════════════════════════════════════════════
+//  VELADAS LIST
+// ══════════════════════════════════════════════════════
+function renderVeladas(app){
+  const cards=EVENTS.map((ev,i)=>{
+    const thumb=ev.group_photo
+      ?`<img src="${ev.group_photo}" alt="${ev.restaurant}" onerror="this.parentElement.innerHTML='<div class=ev-thumb-placeholder><span class=ev-thumb-letter>${ev.restaurant.charAt(0)}</span></div>'">`
+      :`<div class="ev-thumb-placeholder"><span class="ev-thumb-letter">${ev.restaurant.charAt(0)}</span></div>`;
+    return `<div class="ev-card" data-a style="transition-delay:${i*0.07}s" onclick="go('/velada/${ev.id}')">
+      <div class="ev-thumb">${thumb}</div>
+      <div class="ev-body">
+        <div class="ev-num">Velada ${ev.id}${ev.location?' &middot; '+ev.location:''}</div>
+        <div class="ev-rest">${ev.restaurant}</div>
+        <div class="ev-date">${fmt.date(ev.date)}</div>
+        <div class="ev-avs">${ev.participants.map(p=>av(getMember(p.member),'sm')).join('')}</div>
+      </div>
+    </div>`;
+  }).join('');
+  app.innerHTML=`<div class="page"><div class="ph" data-a><div class="ph-ey">El archivo</div><h1 class="ph-title">Las <em>Veladas</em></h1></div><div class="ev-grid">${cards}</div></div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  VELADA DETAIL
+// ══════════════════════════════════════════════════════
+function renderVelada(app,id){
+  const ev=EVENTS.find(e=>e.id===id);
+  if(!ev){app.innerHTML=`<div class="page"><p style="color:var(--dim);text-align:center;padding:80px;font-style:italic">Velada no encontrada.</p></div>`;return;}
+  const n=ev.participants.length;
+  const gp=ev.group_photo
+    ?`<img data-lazy="${ev.group_photo}" alt="Foto grupal" onerror="this.parentElement.innerHTML='<span>Sin foto de grupo</span>'">`
+    :`<span>Sin foto de grupo</span>`;
+  const paxHtml=ev.participants.map((p,i)=>{
+    const m=getMember(p.member);
+    return `<div class="pax-item" data-a="lf" style="transition-delay:${i*0.1}s">
+      <div class="pax-hd">${av(m,'md')}<div><div class="pax-name">${m.name}</div><div class="pax-role">${m.role}</div></div></div>
+      <div class="pax-q">${p.quote||''}</div>
+    </div>`;
+  }).join('');
+  const foodHtml=ev.food.map(d=>`<li class="ord-item"><span class="ord-dot"></span>${d}<span class="ord-badge">Plato</span></li>`).join('');
+  const drinksHtml=ev.drinks.map(d=>`<li class="ord-item"><span class="ord-dot"></span>${d.name}${d.qty>1?` &times;${d.qty}`:''}<span class="ord-badge">Bebida</span></li>`).join('');
+  const photos=ev.dish_photos||[];
+  const dishSlides=photos.map((ph,i)=>`
+    <div class="dish-slide" onclick="openLb(${JSON.stringify(photos)},${i})">
+      <img data-lazy="${ph}" alt="Plato ${i+1}" onerror="this.parentElement.style.background='var(--s3)'">
+    </div>`).join('');
+  const dishCar=photos.length?`
+    <div class="dish-car-wrap" data-a="sc">
+      <div class="sec-t">Los platos</div>
+      <div class="dish-car-outer">
+        <div class="dish-car-track" id="dish-track">${dishSlides}</div>
+      </div>
+    </div>`:'';
+  const foodPP=(ev.food.length/n).toFixed(1);
+  const drnPP=(ev.drinks.reduce((s,d)=>s+d.qty,0)/n).toFixed(1);
+  app.innerHTML=`
+    <div class="page">
+      <div class="vd-bc"><button onclick="go('/veladas')">Veladas</button><span>/</span><span>${ev.restaurant}</span></div>
+      <div class="vd-hd" data-a>
+        <div class="vd-num">Velada ${ev.id}</div>
+        <h1 class="vd-title">${ev.restaurant}</h1>
+        <div class="vd-meta">${fmt.date(ev.date)}${ev.location?' &middot; '+ev.location:''}</div>
+      </div>
+      <div class="vd-gphoto" data-a="sc">${gp}</div>
+      <div class="vd-cols">
+        <div>${paxHtml}</div>
+        <div>
+          <div class="sec-t" data-a>Lo pedido</div>
+          <ul class="ord-list" data-a style="transition-delay:.1s">${foodHtml}${drinksHtml}</ul>
+        </div>
+      </div>
+      ${dishCar}
+      <div class="vd-bill" data-a>
+        <div class="bill-left">
+          <div class="bill-intro">El palazo fue de</div>
+          <div class="bill-slot" data-target="${ev.total_bill}">0&nbsp;&euro;</div>
+          <div class="bill-per">Entre ${n} personas &middot; ${fmt.eur(ev.total_bill/n)} por cabeza</div>
+        </div>
+        <div class="bill-stats">
+          <div><div class="bs-val">${foodPP}</div><div class="bs-lbl">Platos / persona</div></div>
+          <div><div class="bs-val">${drnPP}</div><div class="bs-lbl">Bebidas / persona</div></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  RANKINGS
+// ══════════════════════════════════════════════════════
+function hBarsHtml(items,key,nameFn,fmtFn){
+  const s=[...items].sort((a,b)=>b[key]-a[key]);const max=s[0]?.[key]||1;
+  return`<div class="hbars">${s.map((it,i)=>`
+    <div class="hbar-row">
+      <span class="hbar-pos ${i===0?'g':''}">${i+1}</span>
+      <div class="hbar-info">
+        <div class="hbar-top"><span class="hbar-name">${nameFn(it)}</span><span class="hbar-val">${fmtFn(it[key])}</span></div>
+        <div class="hbar-track"><div class="hbar-fill" data-w="${(it[key]/max*100).toFixed(1)}"></div></div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+function vBarsHtml(items,key,fmtFn){
+  const s=[...items].sort((a,b)=>b[key]-a[key]);const max=s[0]?.[key]||1;
+  const chart=`<div class="vbar-chart">${s.map(it=>`
+    <div class="vbar-col">
+      <div class="vbar-val">${fmtFn(it[key])}</div>
+      <div class="vbar-bar" data-h="${(it[key]/max*85+5).toFixed(1)}"></div>
+    </div>`).join('')}</div>`;
+  const labels=`<div class="vbar-labels">${s.map(it=>`
+    <div class="vbar-lbl-col">
+      <div class="vbar-av">${av(it,'sm')}</div>
+      <div class="vbar-name">${it.name}</div>
+    </div>`).join('')}</div>`;
+  return`<div class="vbar-section">${chart}${labels}</div>`;
+}
+function spentTableHtml(items,key,fmtFn){
+  const s=[...items].sort((a,b)=>b[key]-a[key]);
+  return`<div class="spent-table">${s.map((it,i)=>`
+    <div class="sp-row">
+      <span class="sp-pos ${i===0?'g':''}">${i+1}</span>
+      ${av(it,'sm')}
+      <span class="sp-name">${it.name}</span>
+      <span class="sp-val">${fmtFn(it[key])}</span>
+    </div>`).join('')}</div>`;
+}
+function renderRankings(app){
+  const ms=getMemberStats();
+  const evItems=EVENTS.map(e=>({name:e.restaurant,total_bill:e.total_bill}));
+  app.innerHTML=`
+    <div class="page">
+      <div class="ph" data-a><div class="ph-ey">La competición</div><h1 class="ph-title">Los <em>Rankings</em></h1></div>
+      <div class="rk-sections">
+        <div class="rk-section" data-a>
+          <div class="rk-hd"><span class="rk-em">🍽️</span><h2 class="rk-ttl">Los que más han comido</h2></div>
+          ${hBarsHtml(ms,'food',it=>it.name,v=>v.toFixed(1)+' platos')}
+        </div>
+        <div class="rk-section" data-a>
+          <div class="rk-hd"><span class="rk-em">🍷</span><h2 class="rk-ttl">Los que más han bebido</h2></div>
+          ${vBarsHtml(ms,'drinks',v=>v.toFixed(1))}
+        </div>
+        <div class="rk-section" data-a>
+          <div class="rk-hd"><span class="rk-em">💸</span><h2 class="rk-ttl">Los que más han gastado</h2></div>
+          ${spentTableHtml(ms,'spent',v=>fmt.eur(v))}
+        </div>
+        <div class="rk-section" data-a>
+          <div class="rk-hd"><span class="rk-em">💰</span><h2 class="rk-ttl">Noches más caras</h2></div>
+          ${hBarsHtml(evItems,'total_bill',it=>it.name,v=>fmt.eur(v))}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+//  MIEMBROS
+// ══════════════════════════════════════════════════════
+function renderMiembros(app){
+  const ms=getMemberStats();
+  const cards=MEMBERS.map((m,i)=>{
+    const s=ms.find(x=>x.id===m.id)||{events:0,spent:0};
+    return`<div class="mb-card" data-a style="transition-delay:${i*0.1}s">
+      ${av(m,'lg')}
+      <div class="mb-name">${m.name}</div>
+      <div class="mb-role">${m.role}</div>
+      <div class="mb-stats">
+        <div><div class="ms-val">${s.events}</div><div class="ms-lbl">Veladas</div></div>
+        <div><div class="ms-val">${Math.round(s.spent)}</div><div class="ms-lbl">&euro; gastados</div></div>
+      </div>
+    </div>`;
+  }).join('');
+  app.innerHTML=`<div class="page"><div class="ph" data-a><div class="ph-ey">El club</div><h1 class="ph-title">Los <em>Miembros</em></h1></div><div class="mb-grid">${cards}</div></div>`;
+}
+</script>
+</body>
+</html>

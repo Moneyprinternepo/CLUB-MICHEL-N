@@ -1,0 +1,19 @@
+{
+  "members": [
+    {
+      "id": "pedro",
+      "name": "Pedro",
+      "photo": "photos/profiles/pedro.jpeg"
+    },
+    {
+      "id": "rene",
+      "name": "René",
+      "photo": "photos/profiles/rene.jpeg"
+    },
+    {
+      "id": "guillermo",
+      "name": "Guillermo",
+      "photo": "photos/profiles/guillermo.jpeg"
+    }
+  ]
+}
