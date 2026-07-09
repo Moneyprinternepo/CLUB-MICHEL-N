@@ -53,16 +53,16 @@ body{background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif;font
 .hero-rest{font-family:'Cormorant Garamond',serif;font-size:clamp(42px,7vw,88px);font-weight:300;font-style:italic;line-height:.9;color:var(--ink);animation:heroIn .8s .35s ease both;margin-bottom:10px;}
 .hero-date{font-size:11px;color:rgba(240,232,212,.6);letter-spacing:.08em;margin-bottom:20px;animation:heroIn .8s .5s ease both;}
 /* quote slot */
-.hero-quote-slot{height:4.5rem;overflow:hidden;position:relative;margin-bottom:22px;animation:heroIn .8s .6s ease both;}
-.hq-item{position:absolute;inset:0;display:flex;align-items:flex-start;gap:12px;transition:opacity .55s ease,transform .55s ease;}
+.hero-quote-slot{height:76px;overflow:hidden;position:relative;margin-bottom:22px;max-width:560px;border-radius:4px;animation:heroIn .8s .6s ease both;}
+.hq-item{position:absolute;inset:0;display:flex;align-items:center;gap:14px;padding:14px 20px;background:rgba(12,10,7,.55);backdrop-filter:blur(10px);border:1px solid rgba(237,228,206,.12);border-radius:4px;transition:opacity .55s ease,transform .55s ease;}
 .hq-item.s-enter{opacity:0;transform:translateY(18px);}
 .hq-item.s-vis  {opacity:1;transform:translateY(0);}
 .hq-item.s-exit {opacity:0;transform:translateY(-18px);}
-.hq-av{width:32px;height:32px;border-radius:50%;background:var(--s2);border:1px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;color:var(--gold);font-size:13px;}
+.hq-av{width:36px;height:36px;border-radius:50%;background:var(--s2);border:1px solid var(--border);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;color:var(--gold);font-size:14px;}
 .hq-av img{width:100%;height:100%;object-fit:cover;}
-.hq-body{}
-.hq-who{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;}
-.hq-text{font-family:'Cormorant Garamond',serif;font-size:clamp(15px,2vw,19px);font-style:italic;font-weight:300;color:rgba(240,232,212,.92);line-height:1.35;}
+.hq-body{min-width:0;}
+.hq-who{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--shine);margin-bottom:4px;}
+.hq-text{font-family:'Cormorant Garamond',serif;font-size:clamp(15px,2vw,19px);font-style:italic;font-weight:300;color:#F0E8D4;line-height:1.35;}
 /* hero footer */
 .hero-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;animation:heroIn .8s .75s ease both;}
 .hero-avs{display:flex;gap:8px;align-items:center;}
@@ -258,6 +258,7 @@ footer{border-top:1px solid var(--border);padding:26px 44px;background:var(--s1)
   .hero-content{padding:28px 22px;}
   .hero-rest{font-size:42px;}
   .hero-quote-slot{height:5rem;}
+  .hero-quote-slot{height:88px;}
   .hq-text{font-size:15px;}
   .car-arr{display:none;}
   .stats-strip{grid-template-columns:repeat(3,1fr);}
@@ -425,15 +426,20 @@ function heroImgStart(ev){
 // ══════════════════════════════════════════════════════
 //  HERO QUOTE CYCLING
 // ══════════════════════════════════════════════════════
-let qTimer=null,qIdx=0,qList=[];
-function quoteStop(){if(qTimer){clearInterval(qTimer);clearTimeout(qTimer);qTimer=null;}}
+let qTimer=null,qTrans=null,qIdx=0,qList=[];
+function quoteStop(){
+  if(qTimer){clearInterval(qTimer);qTimer=null;}
+  if(qTrans){clearTimeout(qTrans);qTrans=null;}
+}
 function showQuote(idx){
   const slot=document.getElementById('hq-slot');
   if(!slot)return;
   const old=slot.querySelector('.hq-item');
   if(old){old.classList.remove('s-vis');old.classList.add('s-exit');}
-  setTimeout(()=>{
-    if(old&&old.parentNode)old.parentNode.removeChild(old);
+  if(qTrans){clearTimeout(qTrans);qTrans=null;}
+  qTrans=setTimeout(()=>{
+    // clear ALL items to prevent stacking, not just the tracked one
+    slot.innerHTML='';
     const q=qList[idx];
     if(!q)return;
     const m=getMember(q.member);
@@ -443,11 +449,13 @@ function showQuote(idx){
     el.innerHTML=`<div class="hq-av">${ai}</div><div class="hq-body"><div class="hq-who">${m.name}</div><div class="hq-text">"${q.quote||''}"</div></div>`;
     slot.appendChild(el);
     requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.replace('s-enter','s-vis')));
-  },old?320:0);
+  },old?340:0);
 }
 function quoteStart(ev){
   quoteStop();
-  qList=ev.participants.filter(p=>p.quote);
+  const slot=document.getElementById('hq-slot');
+  if(slot)slot.innerHTML='';
+  qList=(ev.participants||[]).filter(p=>p.quote);
   if(!qList.length)return;
   qIdx=0;
   showQuote(0);
@@ -455,17 +463,31 @@ function quoteStart(ev){
   qTimer=setInterval(()=>{
     qIdx=(qIdx+1)%qList.length;
     showQuote(qIdx);
-  },4000);
+  },4500);
 }
 
 // ══════════════════════════════════════════════════════
 //  MAIN EVENT CAROUSEL
 // ══════════════════════════════════════════════════════
-let evIdx=0,evTimer=null;
+let evIdx=0,evTimer=null,HERO_ORDER=[];
+function buildHeroOrder(){
+  // sort by id descending so latest is first
+  const sorted=[...EVENTS].sort((a,b)=>String(b.id).localeCompare(String(a.id)));
+  const latest=sorted[0];
+  const rest=sorted.slice(1);
+  // shuffle the rest (Fisher-Yates)
+  for(let i=rest.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [rest[i],rest[j]]=[rest[j],rest[i]];
+  }
+  HERO_ORDER=latest?[latest,...rest]:[];
+}
 function evStop(){if(evTimer){clearInterval(evTimer);evTimer=null;}}
 function evGo(idx){
-  evIdx=((idx%EVENTS.length)+EVENTS.length)%EVENTS.length;
-  const ev=EVENTS[evIdx];
+  const len=HERO_ORDER.length||1;
+  evIdx=((idx%len)+len)%len;
+  const ev=HERO_ORDER[evIdx];
+  if(!ev)return;
   // update dots
   document.querySelectorAll('.car-dot').forEach((d,i)=>d.classList.toggle('on',i===evIdx));
   // update content
@@ -481,9 +503,9 @@ function evGo(idx){
   heroImgStart(ev);
   quoteStart(ev);
   evStop();
-  if(EVENTS.length>1)evTimer=setInterval(()=>evGo(evIdx+1),12000);
+  if(HERO_ORDER.length>1)evTimer=setInterval(()=>evGo(evIdx+1),12000);
 }
-function evStart(){evStop();if(EVENTS.length>1)evTimer=setInterval(()=>evGo(evIdx+1),12000);}
+function evStart(){evStop();if(HERO_ORDER.length>1)evTimer=setInterval(()=>evGo(evIdx+1),12000);}
 
 // ══════════════════════════════════════════════════════
 //  LIGHTBOX
@@ -610,9 +632,10 @@ function render(){
 // ══════════════════════════════════════════════════════
 function renderHome(app){
   const g=globalStats();
-  const dots=EVENTS.length>1?`<div class="car-dots">${EVENTS.map((_,i)=>`<div class="car-dot ${i===0?'on':''}" onclick="event.stopPropagation();evGo(${i})"></div>`).join('')}</div>`:'';
-  const arrows=EVENTS.length>1?`<div class="car-arr car-prev" onclick="evGo(evIdx-1)">&#8592;</div><div class="car-arr car-next" onclick="evGo(evIdx+1)">&#8594;</div>`:'';
-  const ev0=EVENTS[0]||{id:'—',restaurant:'—',location:'—',date:'',participants:[]};
+  buildHeroOrder();
+  const dots=HERO_ORDER.length>1?`<div class="car-dots">${HERO_ORDER.map((_,i)=>`<div class="car-dot ${i===0?'on':''}" onclick="event.stopPropagation();evGo(${i})"></div>`).join('')}</div>`:'';
+  const arrows=HERO_ORDER.length>1?`<div class="car-arr car-prev" onclick="evGo(evIdx-1)">&#8592;</div><div class="car-arr car-next" onclick="evGo(evIdx+1)">&#8594;</div>`:'';
+  const ev0=HERO_ORDER[0]||{id:'—',restaurant:'—',location:'—',date:'',participants:[]};
   app.innerHTML=`
     <!-- HERO -->
     <div class="hero" onmouseenter="evStop()" onmouseleave="evStart()">
@@ -664,7 +687,7 @@ function renderHome(app){
   evIdx=0;
   heroImgStart(ev0);
   quoteStart(ev0);
-  if(EVENTS.length>1)evTimer=setInterval(()=>evGo(evIdx+1),12000);
+  if(HERO_ORDER.length>1)evTimer=setInterval(()=>evGo(evIdx+1),12000);
 
   // swipe
   const hero=app.querySelector('.hero');
