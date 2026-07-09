@@ -14,6 +14,16 @@
       "id": "guillermo",
       "name": "Guillermo",
       "photo": "photos/profiles/guillermo.jpeg"
+    },
+    {
+      "id": "roberto",
+      "name": "Roberto",
+      "photo": "photos/profiles/roberto.jpeg"
+    },
+    {
+      "id": "camila",
+      "name": "Camila",
+      "photo": "photos/profiles/camila.jpeg"
     }
   ]
 }
