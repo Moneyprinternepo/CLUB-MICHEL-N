@@ -1,61 +1,28 @@
-[
-  {
-    "id": "001",
-    "restaurant": "Puntarena",
-    "date": "2025-05-19",
-    "total_bill": 216.50,
-    "group_photo": "photos/events/001/group.jpeg",
-    "participants": [
-      { "member": "pedro", "quote": "Qué rica la costilla. 2 meses pensando en ella." },
-      { "member": "rene", "quote": "Pedro, cuando se levantó para ir al baño, iba dando tumbos." },
-      { "member": "guillermo", "quote": "- ¿Si pudieras estar con quien tu quieras por un día, con quién sería? - Con mi novia - Eres un pesado." }
-    ],
-    "food": [
-      "Chicharrón de atún",
-      "Waygu Arriera",
-      "Risotto Esquites",
-      "Costilla de Black Angus braseada"
-    ],
-    "drinks": [
-      { "name": "Botella Alfredo Maestro", "qty": 1 },
-      { "name": "Margarita agua de jamaica", "qty": 3 }
-    ],
-    "dish_photos": [
-      "photos/events/001/Chicharrón_de_atún.jpeg",
-      "photos/events/001/Waygu_Arriera.jpeg",
-      "photos/events/001/Risotto_Esquites.jpeg",
-      "photos/events/001/Costilla_de_Black_Angus_braseada.jpeg"
-    ]
-  },
-  {
-    "id": "002",
-    "restaurant": "Guanabara",
-    "date": "2025-07-08",
-    "total_bill": 164.20,
-    "group_photo": "photos/events/002/group.jpeg",
-    "participants": [
-      {"member": "pedro", "quote": "Menudas fotos de mierda hice. Parece que llevé a los dos mejores amigos que tengo de la uni al comedor del colegio." },
-      { "member": "camila", "quote": "Pedro, cuando se levantó para ir al baño, iba dando tumbos." },
-      { "member": "roberto", "quote": "- ¿Si pudieras estar con quien tu quieras por un día, con quién sería? - Con mi novia - Eres un pesado." }
-    ],
-    "food": [
-      "Buffet Libre",
-      "Buffet Libre",
-      "Buffet Libre",
-      "Picanha",
-      "Lomo bajo de Buey",
-      "Cordero",
-      "Caipiriña Cheescake"
-    ],
-    "drinks": [
-      { "name": "Cairpiriña", "qty": 2 },
-      { "name": "Piñas coladas brasileñas", "qty": 2 }
-    ],
-    "dish_photos": [
-      "photos/events/002/bufet.jpeg",
-      "photos/events/002/carne1.jpeg",
-      "photos/events/002/carne2.jpeg",
-      "photos/events/002/bebida.jpeg"
-    ]
-  }
-]
+{
+  "id": "001",
+  "restaurant": "Puntarena",
+  "date": "2025-05-19",
+  "total_bill": 216.50,
+  "group_photo": "photos/events/001/group.jpeg",
+  "participants": [
+    { "member": "pedro", "quote": "Qué rica la costilla. 2 meses pensando en ella." },
+    { "member": "rene", "quote": "Pedro, cuando se levantó para ir al baño, iba dando tumbos." },
+    { "member": "guillermo", "quote": "- ¿Si pudieras estar con quien tu quieras por un día, con quién sería? - Con mi novia - Eres un pesado." }
+  ],
+  "food": [
+    "Chicharrón de atún",
+    "Waygu Arriera",
+    "Risotto Esquites",
+    "Costilla de Black Angus braseada"
+  ],
+  "drinks": [
+    { "name": "Botella Alfredo Maestro", "qty": 1 },
+    { "name": "Margarita agua de jamaica", "qty": 3 }
+  ],
+  "dish_photos": [
+    "photos/events/001/Chicharrón_de_atún.jpeg",
+    "photos/events/001/Waygu_Arriera.jpeg",
+    "photos/events/001/Risotto_Esquites.jpeg",
+    "photos/events/001/Costilla_de_Black_Angus_braseada.jpeg"
+  ]
+} 
