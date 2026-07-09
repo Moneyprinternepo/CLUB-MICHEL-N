@@ -426,21 +426,22 @@ function heroImgStart(ev){
 // ══════════════════════════════════════════════════════
 //  HERO QUOTE CYCLING
 // ══════════════════════════════════════════════════════
-let qTimer=null,qTrans=null,qIdx=0,qList=[];
+let qTimer=null,qTrans=null,qIdx=0,qList=[],qGen=0;
 function quoteStop(){
+  qGen++; // invalidate any pending timers/timeouts from before
   if(qTimer){clearInterval(qTimer);qTimer=null;}
   if(qTrans){clearTimeout(qTrans);qTrans=null;}
 }
-function showQuote(idx){
+function showQuote(idx,list,gen){
   const slot=document.getElementById('hq-slot');
-  if(!slot)return;
+  if(!slot||gen!==qGen)return;
   const old=slot.querySelector('.hq-item');
   if(old){old.classList.remove('s-vis');old.classList.add('s-exit');}
   if(qTrans){clearTimeout(qTrans);qTrans=null;}
   qTrans=setTimeout(()=>{
-    // clear ALL items to prevent stacking, not just the tracked one
+    if(gen!==qGen)return; // velada changed during transition — abort
     slot.innerHTML='';
-    const q=qList[idx];
+    const q=list[idx];
     if(!q)return;
     const m=getMember(q.member);
     const ai=m.photo?`<img src="${m.photo}" alt="${m.name}" onerror="this.parentElement.textContent='${m.name.charAt(0)}'">`:m.name.charAt(0);
@@ -448,21 +449,24 @@ function showQuote(idx){
     el.className='hq-item s-enter';
     el.innerHTML=`<div class="hq-av">${ai}</div><div class="hq-body"><div class="hq-who">${m.name}</div><div class="hq-text">"${q.quote||''}"</div></div>`;
     slot.appendChild(el);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.replace('s-enter','s-vis')));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{if(gen===qGen)el.classList.replace('s-enter','s-vis');}));
   },old?340:0);
 }
 function quoteStart(ev){
   quoteStop();
+  const gen=qGen; // capture current generation
   const slot=document.getElementById('hq-slot');
   if(slot)slot.innerHTML='';
-  qList=(ev.participants||[]).filter(p=>p.quote);
-  if(!qList.length)return;
+  const list=(ev.participants||[]).filter(p=>p.quote);
+  qList=list;
+  if(!list.length)return;
   qIdx=0;
-  showQuote(0);
-  if(qList.length<=1)return;
+  showQuote(0,list,gen);
+  if(list.length<=1)return;
   qTimer=setInterval(()=>{
-    qIdx=(qIdx+1)%qList.length;
-    showQuote(qIdx);
+    if(gen!==qGen){clearInterval(qTimer);return;}
+    qIdx=(qIdx+1)%list.length;
+    showQuote(qIdx,list,gen);
   },4500);
 }
 
